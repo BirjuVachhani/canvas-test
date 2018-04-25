@@ -5,7 +5,9 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,11 +25,13 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
     private Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint pressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Path clipPath;
     private boolean adjustViewBound;
     private int centerX, centerY, width, height, borderWidth, borderColor, wrappedSize, pressedColor, textColor, textSize, tvId;
     private Rect textBounds = new Rect();
     private String initial;
     private TextView tvName;
+    private boolean textChangeListenerEnabled = false;
     private boolean isColorsRandomized = false;
     private TextWatcher textWatcher = new TextWatcher() {
         @Override
@@ -87,7 +91,14 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
         isColorsRandomized = attrArray.getBoolean(R.styleable.AvatarView_randomizeColor, false);
 
         if (isColorsRandomized)
-            createColors();
+            createColors(colorRes);
+
+        int colorExtResId = attrArray.getResourceId(R.styleable.AvatarView_randomColorRes, 0);
+        if (colorExtResId != 0) {
+            int cIds[] = getContext().getResources().getIntArray(colorExtResId);
+            createColors(cIds);
+        }
+
 
         backgroundColor = attrArray.getColor(R.styleable.AvatarView_avatar_backgroundColor,
                 isColorsRandomized ? colors[random.nextInt(colors.length)] : Color.DKGRAY);
@@ -97,6 +108,7 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
         pressedColor = attrArray.getColor(R.styleable.AvatarView_pressedColor, backgroundColor);
         textColor = attrArray.getColor(R.styleable.AvatarView_textColor, Color.WHITE);
         textSize = attrArray.getDimensionPixelSize(R.styleable.AvatarView_textSize, 10);
+        textChangeListenerEnabled = attrArray.getBoolean(R.styleable.AvatarView_textChangeListener, false);
 
         tvId = attrArray.getResourceId(R.styleable.AvatarView_textView, 0);
 
@@ -108,13 +120,23 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
         wrappedSize = (radius * 2) + borderWidth + 5;
         attrArray.recycle();
         setPaints();
+        clipPath = new Path();
     }
 
-    private void createColors() {
-        int len = colorRes.length;
+    private void createColors(int[] c) {
+        int len = c.length;
         colors = new int[len];
-        for (int i = 0; i < colorRes.length; i++) {
-            int color = Color.parseColor(colorRes[i]);
+        for (int i = 0; i < c.length; i++) {
+            int color = c[i];
+            colors[i] = color;
+        }
+    }
+
+    private void createColors(String[] c) {
+        int len = c.length;
+        colors = new int[len];
+        for (int i = 0; i < c.length; i++) {
+            int color = Color.parseColor(c[i]);
             colors[i] = color;
         }
     }
@@ -158,11 +180,8 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        //drawing circle
-        canvas.drawCircle(centerX, centerY, radius, borderPaint);
 
-        //drawing border
+        //drawing circle
         canvas.drawCircle(centerX, centerY, radius, backgroundPaint);
 
         //calculating bottom for letter
@@ -173,6 +192,14 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
 
         //drawing Initial Letter
         canvas.drawText(getInitial(), width / 2f, textBottom, textPaint);
+
+        //drawing border
+        canvas.drawCircle(centerX, centerY, radius, borderPaint);
+
+        clipPath.addCircle(centerX, centerY, radius - borderWidth / 2, Path.Direction.CW);
+        canvas.clipPath(clipPath);
+
+        super.onDraw(canvas);
     }
 
     @Override
@@ -187,11 +214,12 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
         super.onAttachedToWindow();
 
         //getting initial letter from linked textView, if any linked
-        if (getParent() != null) {
+        if (getParent() != null && tvId != 0) {
             tvName = ((View) getParent()).findViewById(tvId);
             if (tvName != null && !tvName.getText().toString().equals("")) {
                 initial = tvName.getText().toString().substring(0, 1).toUpperCase();
             }
+            if (textChangeListenerEnabled) enableTextChangeListener();
         }
     }
 
@@ -252,6 +280,7 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
 
     public void linkTextView(TextView textView) {
         tvName = textView;
+        invalidate();
     }
 
     public void unlinkTextView() {

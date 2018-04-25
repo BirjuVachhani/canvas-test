@@ -7,11 +7,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 public class MainActivity extends AppCompatActivity {
     TextView tvName;
     AvatarView avAvatar;
     int count = 0;
     String[] names = {"Chintan", "Rajan", "Birju", "Sagar", "Rushabh", "Vatsal"};
+    String circleAvatar = "https://www.vzones.com/forums/styles/FLATBOOTS/theme/images/user4.png";
+    String squareAvatar = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9KdWjELleM7etPpp1r40_2S-zS4ofcWbKvpd2nBEHEHRzE7jztg";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,11 +23,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tvName = findViewById(R.id.tvName);
         avAvatar = findViewById(R.id.avatarView2);
-        avAvatar.setBackgroundColor(Color.GREEN);
+        Picasso.get().load(squareAvatar).placeholder(R.drawable.ic_launcher_background).fit().into(avAvatar);
     }
 
     public void changeText(View view) {
-        tvName.setText(names[count++]);
+
     }
 
     public void enableListener(View view) {
@@ -32,5 +36,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void disableListener(View view) {
         avAvatar.disableTextChangeListener();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
     }
 }
