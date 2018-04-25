@@ -19,6 +19,8 @@
         android:focusable="true"
         app:borderColor="@android:color/white"
         app:borderWidth="3dp"
+        app:endColor="#1BFFFF"
+        app:gradiantEnabled="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
@@ -26,9 +28,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:pressedColor="@color/colorPrimary"
         app:radius="100dp"
-        app:randomColorRes="@array/randomColors"
-        app:randomizeColor="true"
-        app:textSize="150sp"
+        app:randomizeColor="false"
+        app:startColor="#2E3192"
+        app:textSize="90sp"
         app:textView="@id/tvName" />
 
     <TextView

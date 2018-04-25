@@ -4,9 +4,13 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.Shader;
+import android.graphics.SweepGradient;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.text.Editable;
@@ -67,6 +71,10 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
             "#607D8B",};
     private Random random = new Random();
     private int colors[];
+    private boolean gradiantEnabled = false;
+    private GradientDrawable gradientDrawable;
+    private int startColor;
+    private int endColor;
 
     public AvatarView(Context context) {
         super(context);
@@ -98,7 +106,12 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
             int cIds[] = getContext().getResources().getIntArray(colorExtResId);
             createColors(cIds);
         }
-
+        gradiantEnabled = attrArray.getBoolean(R.styleable.AvatarView_gradiantEnabled, false);
+        if (gradiantEnabled) {
+            startColor = attrArray.getColor(R.styleable.AvatarView_startColor, Color.DKGRAY);
+            endColor = attrArray.getColor(R.styleable.AvatarView_endColor, Color.DKGRAY);
+            gradientDrawable = createGradiant(startColor, endColor);
+        }
 
         backgroundColor = attrArray.getColor(R.styleable.AvatarView_avatar_backgroundColor,
                 isColorsRandomized ? colors[random.nextInt(colors.length)] : Color.DKGRAY);
@@ -121,6 +134,12 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
         attrArray.recycle();
         setPaints();
         clipPath = new Path();
+    }
+
+    private GradientDrawable createGradiant(int startColor, int endColor) {
+        int[] colors = {startColor, endColor};
+        GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TR_BL, colors);
+        return gd;
     }
 
     private void createColors(int[] c) {
@@ -199,7 +218,20 @@ public class AvatarView extends android.support.v7.widget.AppCompatImageView {
         clipPath.addCircle(centerX, centerY, radius - borderWidth / 2, Path.Direction.CW);
         canvas.clipPath(clipPath);
 
+        if (gradiantEnabled) {
+            int colors[] = {startColor, endColor};
+//            Shader shader = new LinearGradient(0, 0, radius * 2, radius * 2, colors, null, Shader.TileMode.CLAMP);
+            Shader shader = new SweepGradient(radius,radius,colors,null);
+            backgroundPaint.setShader(shader);
+            //drawing circle
+            canvas.drawCircle(centerX, centerY, radius, backgroundPaint);
+        }
         super.onDraw(canvas);
+
+        if (gradiantEnabled) {
+            //drawing Initial Letter
+            canvas.drawText(getInitial(), width / 2f, textBottom, textPaint);
+        }
     }
 
     @Override

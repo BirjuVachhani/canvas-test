@@ -24,6 +24,9 @@
         <attr name="textView" format="reference" />
         <attr name="randomizeColor" format="boolean" />
         <attr name="textChangeListener" format="boolean" />
-        <attr name="randomColorRes" format="reference"/>
+        <attr name="randomColorRes" format="reference" />
+        <attr name="gradiantEnabled" format="boolean" />
+        <attr name="startColor" format="color" />
+        <attr name="endColor" format="color" />
     </declare-styleable>
 </resources>

@@ -16,6 +16,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:radius="30dp"
+        app:gradiantEnabled="true"
+        app:startColor="#2E3192"
+        app:endColor="#1BFFFF"
         app:randomizeColor="true"
         app:textSize="24sp"
         app:textView="@id/tvName" />
